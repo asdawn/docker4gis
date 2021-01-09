@@ -275,6 +275,8 @@ Dockerfile文件名要求是**Dockerfile**。
 
 ## 集成PostgreSQL数据库的Docker镜像
 
++ 官方镜像
+
 官方Dockerhub上有PostgreSQL、PostGIS和PgRouting的官方镜像，下载命令分别为：
 
 `docker pull postgres`
