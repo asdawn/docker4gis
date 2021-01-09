@@ -46,7 +46,7 @@ sudo systemctl restart docker
 
 这里选择目前在持续维护中的官方提供的Docker Registry和第三方的Nexus3。假设已经装好了Docker。建议使用Linux系统的服务器运行Docker仓库。
 
-+ Docker Registry
+### Docker Registry
 
 Docker Registry是官方的镜像仓库工具，资源消耗很低，有ARM和X84、X64版的Docker镜像，能够在很多支持Docker的NAS上运行。
 
@@ -114,7 +114,12 @@ docker push ip地址:33321/centos:8
 
 Docker Registry可以通过htpasswd认证机制来进行账户限制，但是配置稍嫌复杂。需要账号及权限管理时建议使用Nexus3。
 
-+ Nexus3
+### Nexus3
+
+Nexus3是目前尚在定期更新的最知名的仓库工具之一（portus已经两年不更新了），支持docker、git、maven、apt等多种仓库。
+
+
+
 
 ## Docker镜像制作方法
 
