@@ -131,8 +131,7 @@ Dockerfile文件名要求是**Dockerfile**。
 
 由于Docker官方仓库提供免费的不限量的上传服务，国内镜像仓库的同步机制是缓存被申请过的镜像。因此对于比较新或者比较小众的镜像，启用国内源时第一次下载可能也是很慢，但是之后就快了。
 
-Linux软件包比较标准化，一般不存在这类问题。不同的发行版的国内镜像仓库设置方法不同，可参阅[清华大学国内源](https://mirrors.tuna.tsinghua.edu.cn/help/)对应项目的说明。
-
+Linux软件包比较标准化，一般不存在这类问题。不同的发行版的国内镜像仓库设置方法不同，可参阅[清华大学国内源](https://mirrors.tuna.tsinghua.edu.cn/help/)对应项目的说明。对于Ubuntu和Alpine，可以从官方仓库pull设置好国内源的asdawn/cnubuntu:20.10和asdawn/cnalpine:3.12，或者自行编译，Dockerfile见对应的文件夹。
 
 + 怎样查找已有的Docker镜像
 
