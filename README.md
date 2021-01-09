@@ -44,9 +44,75 @@ sudo systemctl restart docker
 
 ## Docker私有仓库安装配置
 
-这里选择目前在持续维护中的官方提供的Docker Registry和第三方的Nexus3。
+这里选择目前在持续维护中的官方提供的Docker Registry和第三方的Nexus3。假设已经装好了Docker。建议使用Linux系统的服务器运行Docker仓库。
 
 + Docker Registry
+
+Docker Registry是官方的镜像仓库工具，资源消耗很低，有ARM和X84、X64版的Docker镜像，能够在很多支持Docker的NAS上运行。
+
+首先是下载镜像：
+
+`docker pull registry`
+
+然后找一个空间足够的分区创建dockerhub目录（**请根据实际情况修改路径**），例如:
+
+`mkdir /mnt/hddb/dockerhub`
+
+然后启动dockerhub服务（容器命名为dockerhub），数据目录使用/mnt/hddb/dockerhub，端口33321（将Docker Registry镜像内默认使用的5000端口映射到宿主机的33321端口）:
+
+`docker run --name dockerhub -d -p 33321:5000 -v /mnt/hddb/dockerhub:/var/lib/registry registry`
+
+防火墙开放对应端口:
+
+```
+firewall-cmd --permanent --add-port=33321/tcp
+firewall-cmd --reload
+```
+
+接下来测试连接是否正常。查看名为dockerhub的容器的状态：
+
+`docker logs dockerhub`
+
+然后连接下网页版试试看（请替换为实际使用的IP地址）：
+
+*IP地址*:33321/v2/_catalog，打开后显示repositories为空。
+
+推一个镜像上去，过程为下载镜像、给镜像加本地空间的标签，然后上传到本地。不过没有启用https，所以要先在Docker的配置文件（Docker桌面找设置里的Docker Engine选项卡，Linux版Docker修改/etc/docker/daemon.json并重启docker），在其中的"insecure-registries"中添加该机器，例如：
+```JSON
+{
+  ......
+  "insecure-registries": [
+    "IP地址:33321",
+  ]
+  ......
+}
+
+```
+
+这样才能正常访问。接下来下载镜像并推送：
+
+```
+docker pull centos:8
+docker tag centos:8 ip地址:33321/centos:8
+docker push ip地址:33321/centos:8
+```
+
+现在可以查看一下本地目录：
+
+`ls /mnt/hddb/dockerhub`
+
+一级一级查看，可以看到已经在该文件夹下面创建了centos:8镜像的存储目录`/mnt/hddb/dockerhub/docker/registry/v2/repositories/centos/_manifests/tags/8`。
+网页`IP地址:33321/v2/_catalog`的内容也发生了相应的改变。
+
+如果需要关闭服务，执行：
+
+`docker container stop dockerhub`
+
+设置为自启动（只要Docker启动就运行registry），则docker run命令要添加一个`--restart=always`参数。启动命令改为：
+
+`docker run --name dockerhub -d --restart=always -p 33321:5000 -v /mnt/hddb/dockerhub:/var/lib/registry registry`
+
+Docker Registry可以通过htpasswd认证机制来进行账户限制，但是配置稍嫌复杂。需要账号及权限管理时建议使用Nexus3。
 
 + Nexus3
 
