@@ -5,17 +5,17 @@
 
 ## 目录
 
-+ Docker安装配置
++ [Docker安装配置](#Docker安装配置)
 
-+ Docker私有仓库安装配置
++ [Docker私有仓库安装配置](#Docker私有仓库安装配置)
 
-+ Docker镜像制作方法
++ [Docker镜像制作方法](#Docker镜像制作方法)
 
-+ 集成PostgreSQL数据库的Docker镜像
++ [集成PostgreSQL数据库的Docker镜像](#集成PostgreSQL数据库的Docker镜像)
 
-+ 常见问题
++ [常见问题](#常见问题)
 
-## 1. Docker安装配置
+## Docker安装配置
 
 + Windows版
 
@@ -42,7 +42,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker
 ```
 
-## 2. Docker私有仓库安装配置
+## Docker私有仓库安装配置
 
 这里选择目前在持续维护中的官方提供的Docker Registry和第三方的Nexus3。
 
@@ -50,7 +50,7 @@ sudo systemctl restart docker
 
 + Nexus3
 
-## 3. Docker镜像制作方法
+## Docker镜像制作方法
 
 + 入门级做法
 
@@ -120,7 +120,7 @@ pull一个Docker镜像，挂载执行其中的bash（建议docker run带上 --na
 
 Dockerfile文件名要求是**Dockerfile**。
 
-## 4. 集成PostgreSQL数据库的Docker镜像
+## 集成PostgreSQL数据库的Docker镜像
 
 + postgres
 
@@ -136,7 +136,7 @@ Dockerfile文件名要求是**Dockerfile**。
 
 /usr/lib/postgresql/11/bin/pg_ctl -D /postgres -l /postgres/logfile stop
 
-## 5. 常见问题
+## 常见问题
 
 + 下载慢怎么办
 
