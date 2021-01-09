@@ -5,7 +5,7 @@
 
 ## 目录
 
-+ Docker客户端安装配置
++ Docker安装配置
 
 + Docker私有仓库安装配置
 
@@ -15,11 +15,32 @@
 
 + 常见问题
 
-## 1. Docker客户端安装配置
+## 1. Docker安装配置
 
 + Windows版
 
+Windows 10系统请安装最新版的Windows版[Docker Desktop](https://www.docker.com/products/docker-desktop)。依赖于WSL2（需要升级到较新的版本，然后安装WSL2补丁），Docker安装时会有相应的说明。
+
+旧版本Windows可以使用基于虚拟机的Windows版Docker。
+
++ MacOS版
+
+MacOS系统请安装最新版的[Docker Desktop](https://www.docker.com/products/docker-desktop)。
+
 + Linux版
+
+不同的Linux发行版Docker引擎安装方式不同，可以参考[菜鸟教程](https://www.runoob.com/docker/ubuntu-docker-install.html)上的说明，必要时使用bing国际版用英文检索问题解决方法。
+
++ Docker配置方法
+
+Docker Desktop提供基于图形界面的设置页面，Docker引擎参数设置在设置页面（settings）的Docker引擎（Docker Engine）选项卡中，里边的JSON就是配置参数。修改后会提示重启Docker以使变更生效。
+
+Linux下的Docker配置文件为`/etc/docker/daemon.json`，可能需要手工创建。更新后要手动重启docker引擎使变化生效（不同系统下docker服务名称可能有轻微差异）：
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
 
 ## 2. Docker私有仓库安装配置
 
