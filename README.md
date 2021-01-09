@@ -15,4 +15,109 @@
 
 + 常见问题
 
+## 1. Docker客户端安装配置
 
++ Windows版
+
++ Linux版
+
+## 2. Docker私有仓库安装配置
+
+这里选择目前在持续维护中的官方提供的Docker Registry和第三方的Nexus3。
+
++ Docker Registry
+
++ Nexus3
+
+## 3. Docker镜像制作方法
+
++ 入门级做法
+
+pull一个Docker镜像，挂载执行其中的bash（建议docker run带上 --name=名称），然后手动安装配置所需的软件与应用，执行完毕后退出。然后对该容器进行commit，得到新的镜像。
+
+`docker commit 容器id或者name 新镜像的标签`
+
+这种方式相对简单，适合在实验阶段使用，但基础镜像是什么、进行了哪些操作不透明，对于用户来说具有一定的风险（例如镜像被嵌入木马或病毒）。
+
++ 正规做法
+
+一般是通过Dockerfile来编译镜像的，Dockerfile由以下几个部分组成：
+ 
+### a. 注释
+ 
+ `#`开头的行是注释行
+ 
+### b. 基础镜像（必选）
+ 
+ `FROM 镜像标签`
+ 
+### c. 镜像的Label
+ 
+ `LABEL 标签名="标签值"`
+
+比较新的Dockerfile规范中很多信息统一采用LABEL来添加，详见[官方文档](https://docs.docker.com/engine/reference/builder/)
+
+### d. 环境变量设置
+
+`ENV 环境变量 取值`
+
+·ARG 环境变量 取值·
+
+前者设置的是镜像加载后的环境变量，后者是设置镜像编译过程中的环境变量。
+
+### e. 暴露的端口
+
+`EXPOSE 端口号`
+
+有了ENV和EXPOSE，Docker容器管理工具就能自动识别需要设置哪些变量、重定向哪些端口，有利于自动化执行。
+
+### f. 执行命令
+
+`RUN 操作内容`
+
+这里操作内容就是普通的bash命令。每条RUN提交一层镜像保存其修改，如果没有特殊需求，可以将多个命令用 ` && `拼接到一行以减少非必要的镜像层以节约资源。此外对于一些有前后依赖的命令采用这种方式也很有用处，例如启动数据库、导入数据、关闭数据库这个操作序列，如果写在多个RUN里就会出错，用 && 连接执行就正常了。
+
+由于基础镜像都相对精简，一些常见软件包可能尚未安装（尤其是高度精简的Alpine Linux），所以必要时需要先执行安装操作。可以先以交互的形式运行一次试试看。
+
+由于使用的基础镜像是什么、执行了哪些操作都可以直接看到，部署的应用及其执行方式也比较明确。很多面向一般公众的应用选择将代码发布到github上，从而保证其Docker镜像只使用官方基础镜像、官方软件包以及源代码。
+
+### g. 拷贝文件到镜像内
+
+`COPY 外部路径 镜像内路径`
+
+### h. 自启动
+
+`ENTRYPOINT 命令或脚本`
+
+镜像每次启动时都会执行该命令或脚本。只允许一个，所以必要时请写一个脚本。
+
+更多关于Dockerfile格式的说明请参见中文的[菜鸟教程](https://www.runoob.com/docker/docker-dockerfile.html)；比较新的细节还是要参阅[官方文档](https://docs.docker.com/engine/reference/builder/)
+
+一般来说，除非依赖于本地文件，有了Dockerfile文件就可以编译出对应的镜像。因此很多开源软件选择github存放源代码，私有代码也可以使用私有的git仓库，这样就可以避免使用本地文件。再次强调，本地文件存在被恶意使用的可能性，风险大于直接使用源代码。对于敏感度极高的应用，请谨慎处理。
+
+`docker build -t 新镜像标签 Dockerfile所在目录`
+
+Dockerfile文件名要求是**Dockerfile**。
+
+## 4. 集成PostgreSQL数据库的Docker镜像
+
++ postgres
+
++ PostGIS
+
++ PgRouting
+
++ 自定义镜像
+
+
+`pg_ctl -D 
+
+
+/usr/lib/postgresql/11/bin/pg_ctl -D /postgres -l /postgres/logfile stop
+
+## 5. 常见问题
+
++ 
+
+
++ 
