@@ -116,9 +116,91 @@ Docker Registry可以通过htpasswd认证机制来进行账户限制，但是配
 
 ### Nexus3
 
-Nexus3是目前尚在定期更新的最知名的仓库工具之一（portus已经两年不更新了），支持docker、git、maven、apt等多种仓库。
+Nexus3是目前尚在定期更新的最知名的仓库工具之一（portus已经两年不更新了），支持docker、git、maven、apt等多种仓库。同样是直接使用官方的Docker镜像进行部署。
 
+首先下载镜像：
 
+`docker pull sonatype/nexus3`
+
+然后创建本地目录并修改访问权限（路径请根据需要自行修改，一般要找一个容量比较大的分区）：
+```bash
+mkdir /mnt/hddb/nexus3
+chown -R 200 /mnt/hddb/nexus3
+```
+
+启动nexes3（容器名称指定为nexus3。nexus3的主控Web页面端口是8081，Docker服务我们设置为8082，然后映射到宿主机的33321和33322）：
+
+`docker run -d -p 33321:8081 -p 33322:8082 --name nexus3 -v /mnt/hddb/nexus3:/nexus-data sonatype/nexus3`
+
+如果需要始终运行（Docker服务正常运行的前提下）为：
+`docker run -d --restart=always -p 33321:8081 -p 33322:8082 --name nexus3 -v/mnt/hddb/nexus3:/nexus-data sonatype/nexus3`
+
+docker镜像使用的是8081（配置时要使用8082），为防止占用影响其他程序，启动docker时将他们映射到33321和33322。
+
+nexus3启动时间较长，请耐心等待几分钟。如果不放心可以`docker logs nexus3`查看其日志，确定是否正常运行。
+
+为了让其他机器能够访问，还要开放对应端口：
+
+```bash
+firewall-cmd --permanent --add-port=33321/tcp
+firewall-cmd --permanent --add-port=33322/tcp
+firewall-cmd --reload
+```
+ 
+停止运行的命令为：
+`docker stop nexus3`
+
+启动完毕后可以开始进行访问权限配置，Web管理页面的URL为*IP:33321*。管理员账号admin，密码在容器的`/nexus-data/admin.password`里，也就是`/mnt/hddb/nexus3/admin.password`，注意根据实际情况修改路径。查看密码：
+
+`cat /mnt/hddb/nexus3/admin.password`
+
+登录完成后就是安装向导，在里边更新密码、关闭匿名访问。
+
+接下来创建Docker仓库。可以针对不同的项目或群组创建多个。建议清理掉系统预装的其他仓库。设置里新建仓库，有三种类型：
+
+项目	| 具体说明
+----- | ------
+hosted	| 本地存储。像官方仓库一样提供本地私库功能
+proxy	| 提供代理其它仓库的类型
+group	| 组类型，能够组合多个仓库为一个地址提供服务
+
+局域网私有库就选hosted，然后设置一个http端口（docker引擎的配置里要添加相应的非可信源），这里假设是8082。如果申请了证书还可以启用https端口。
+
+权限管理通过（仓库访问）权限、角色和用户实现。
+
++ nexus会将各个仓库的权限拆分成细节选项，一般可以直接使用，有必要再自行编辑。
+
++ 角色是权限的组合，可以对用户进行分类，设置多个角色分开管理。
+
++ 用户具有账号密码和角色，登陆后可以享有角色对应的访问权限。
+
+一般还要关闭匿名访问，强制要求登录。到这里就完成了初步的配置，可以开始测试。
+
+连接下网页版试试看（请替换为实际使用的IP地址）：
+
+*IP地址*:33321/v2/_catalog，打开后显示repositories为空。
+
+推一个镜像上去，过程为下载镜像、给镜像加本地空间的标签，然后上传到本地。不过没有启用https，所以要先在Docker的配置文件（Docker桌面找设置里的Docker Engine选项卡，Linux版Docker修改/etc/docker/daemon.json并重启docker），在其中的"insecure-registries"中添加该机器，例如：
+```JSON
+{
+  ......
+  "insecure-registries": [
+    "IP地址:33322",
+  ]
+  ......
+}
+
+```
+
+这样才能正常访问。接下来下载镜像并推送：
+
+```
+docker pull centos:8
+docker tag centos:8 ip地址:33322/centos:8
+docker push ip地址:33322/centos:8
+```
+
+然后在Nexus3的Web管理页面中可以查看有哪些镜像并进行管理。当然也可以使用Docker仓库的http接口。
 
 
 ## Docker镜像制作方法
