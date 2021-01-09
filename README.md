@@ -275,19 +275,54 @@ Dockerfile文件名要求是**Dockerfile**。
 
 ## 集成PostgreSQL数据库的Docker镜像
 
-+ postgres
+官方Dockerhub上有PostgreSQL、PostGIS和PgRouting的官方镜像，下载命令分别为：
 
-+ PostGIS
+`docker pull postgres`
 
-+ PgRouting
+`docker pull postgis/postgis`
+
+`docker pull pgrouting/pgrouting`
+
+PostGIS是在PostgreSQL的基础上制作的，pgRouting又是在PostGIS的基础上制作的，一些加载方面的细节参阅[postgres镜像的文档](https://hub.docker.com/_/postgres)即可。
+
+三者都有很多个历史版本可用，不特殊指定下载的就是latest。部分版本变动较大，需要使用指定版本时可以在Dockerhub上检索对应的标签。一些版本还有有基于Debian和Alpine等发行版的版本，前者系统应用较全面，后者较精简，数据库使用本身没有明显区别。
+
+
+官方镜像运行时需要指定P`OSTGRES_PASSWORD`，如果数据目录为空（允许通过`PGDATA`变量自定义）则会初始化数据库，并执行`/docker-entrypoint-initdb.d`下的脚本；不为空则挂载数据库直接运行。例如：
+
+```bash
+docker run -d \
+    --name 容器名 \
+    -e POSTGRES_PASSWORD=密码 \
+    -e PGDATA=/var/lib/postgresql/data/pgdata \
+    -v /宿主机路径:/var/lib/postgresql/data \
+    postgres
+```
+
+建议使用外部目录或者卷作为数据目录。否则容器停止运行后如果不commit则会丢失所有变更，使用外部目录则能保留数据库操作的影响。
 
 + 自定义镜像
 
+希望将数据库打包进镜像或者执行一些较复杂操作时，可以在官方镜像的基础上创建自定义镜像。以下是常用的一些命令：
 
-`pg_ctl -D 
+创建数据目录：
 
+```bash
+mkdir 数据路径
+chown postgres 数据路径
+```
 
-/usr/lib/postgresql/11/bin/pg_ctl -D /postgres -l /postgres/logfile stop
+初始化数据库：
+
+`su postgres -c "/usr/lib/postgresql/11/bin/initdb -D 数据路径" `
+
+启动数据库服务：
+`su postgres -c "/usr/lib/postgresql/11/bin/pg_ctl -D 数据路径 -l log文件路径 start"` 
+
+停止数据库服务()：
+`su postgres -c "/usr/lib/postgresql/11/bin/pg_ctl -D 数据路径 -l log文件路径 stop"`
+
+由于postgres数据库是以postgres账户执行的，Docker里默认账户是root，所以要调整目录权限以及su postgres来执行相关命令。Docker镜像不一定支持`systemctl`或者`service`命令来控制服务，所以用原始的命令更可靠。
 
 ## 常见问题
 
